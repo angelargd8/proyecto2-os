@@ -495,11 +495,12 @@ if procesos_df is not None and st.button("Simular"):
         prio(procesos_df)
         
 
-    st.write("Tiempos de espera por algoritmo (durante esta simulación):")
+    st.subheader("Resumen de metricas de eficiencia de los algoritmos:")
+    st.write(":blue[Tiempos de espera por algoritmo]:")
     st.dataframe(pd.DataFrame.from_dict(
         st.session_state["waitinTime"], 
         orient="index", 
-        columns=["Tiempo de espera"]
+        columns=["Tiempo de espera (ciclos de CPU)"]
     ))
         
 
