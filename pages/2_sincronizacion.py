@@ -4,4 +4,4 @@ import time
 import plotly.express as px
 from io import BytesIO, StringIO
 
-st.title("Simulador de mecanismos de sincronizacion 🤑🔒")
+st.title("Simulador de mecanismos de sincronizacion")

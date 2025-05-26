@@ -20,7 +20,7 @@ if st.session_state.page == "menu":
 
     with col1:
         st.markdown("**Simulacion de algoritmos de calendarizacion:**", unsafe_allow_html=True)
-        st.text_area("", "explicacion xd", height=150)
+        st.text_area("", "Calendarización, se refiere a decidir a qué proceso asignar un recurso", height=150)
     with col2:
         st.markdown("**Simulacion de mecanismos de sincronizacion:**", unsafe_allow_html=True)
         st.text_area("", "explicacion2 xd", height=150)
