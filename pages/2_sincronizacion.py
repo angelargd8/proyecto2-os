@@ -74,7 +74,9 @@ def MutexLocks(procesos_df, recursos_df, acciones_df):
    
     for ciclo in range(max_ciclo + 10): 
 
+        #obtener las acciones planeadas del ciclo
         acciones_en_ciclo = acciones_df[acciones_df["ciclo"] == ciclo].to_dict("records")
+        #agregar acciones que estaban esperando
         acciones_en_ciclo += cola_espera
         cola_espera = []
 
@@ -84,21 +86,25 @@ def MutexLocks(procesos_df, recursos_df, acciones_df):
             tipo = accion["accion"]
             at = accion["AT"]
 
+            #verificacion del tiempo de llgada, si no ha llegado se reprograma
             if ciclo < at:
-                # Aun no ha llegado, reprograma
                 accion["ciclo"] = ciclo + 1
                 cola_espera.append(accion)
                 continue
-
+            
+            #verificar si el recurso esta disponible
             if recurso_estado[recurso]:
                 estado = "ACCESSED"
                 recurso_estado[recurso] = False
             else:
+                #se reprograma la accion y se pone en waiting
                 estado = "WAITING"
                 accion["ciclo"] = ciclo + 1
                 cola_espera.append(accion)
 
+            #calcula las acciones que le quedan por ejecutar al proceso
             restantes = max(bt_map[pid] - acciones_realizadas[pid] - 1, 0)
+            #registro en la linea del timepo del proceso en este ciclo
             timeline.append({
                 "PID": pid,
                 "Recurso": recurso,
@@ -193,6 +199,7 @@ def semaforos(procesos_df, recursos_df, acciones_df):
     acciones_df = acciones_df[acciones_df["accion_idx"] < acciones_df["BT"]]
     acciones_df = acciones_df.drop(columns=["accion_idx"])
 
+    #contador de cantidad todal de acciones 
     acciones_realizadas = {pid: 0 for pid in procesos_df["PID"]}
     bt_map = dict(zip(procesos_df["PID"], procesos_df["BT"]))
     max_ciclo = acciones_df["ciclo"].max()
@@ -202,9 +209,13 @@ def semaforos(procesos_df, recursos_df, acciones_df):
 
     # por cada ciclo 
     for ciclo in range(max_ciclo + 10):
+        #obtener las acciones planeadas del ciclo
         acciones_en_ciclo = acciones_df[acciones_df["ciclo"] == ciclo].to_dict("records")
+        #agregar acciones que estaban esperando en ciclos pasados porque no se ejecutaron
         acciones_en_ciclo += cola_espera
         cola_espera = []
+        #reiniciar un registro para saber cuantas veces fue usado cada recurso en este ciclo
+        #es para liberarlos
         uso_en_ciclo = {r: 0 for r in recurso_contador}
 
         for accion in acciones_en_ciclo:
@@ -213,23 +224,27 @@ def semaforos(procesos_df, recursos_df, acciones_df):
             tipo = accion["accion"]
             at = accion["AT"]
 
+            #verificacion del tiempo de llgada, si no ha llegado se reprograma
             if ciclo < at:
-                # Aun no ha llegado, reprograma
                 accion["ciclo"] = ciclo + 1
                 cola_espera.append(accion)
                 continue
-
+            
+            #verificar si el recurso esta disponible
             if recurso_contador[recurso] > 0:
                 estado = "ACCESSED"
                 recurso_contador[recurso] -= 1
                 uso_en_ciclo[recurso] += 1
             else:
+                #se reprograma la accion y se pone en waiting
                 estado = "WAITING"
                 accion["ciclo"] = ciclo + 1
                 cola_espera.append(accion)
 
+            #calcula las acciones que le quedan por ejecutar al proceso
             restantes = max(bt_map[pid] - acciones_realizadas[pid] - 1, 0)
             
+            #registro en la linea del timepo del proceso en este ciclo
             timeline.append({
                 "PID": pid,
                 "Recurso": recurso,
@@ -240,9 +255,10 @@ def semaforos(procesos_df, recursos_df, acciones_df):
                 "Restantes": restantes
             })
 
+            #incrementar contador de acciones
             acciones_realizadas[pid] += 1
 
-        
+        #liberar recursos usados
         for r in uso_en_ciclo:
             recurso_contador[r] += uso_en_ciclo[r]
 

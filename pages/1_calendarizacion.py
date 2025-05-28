@@ -501,5 +501,4 @@ if procesos_df is not None and st.button("Simular"):
         orient="index", 
         columns=["Tiempo de espera (ciclos de CPU)"]
     ))
-        
 
