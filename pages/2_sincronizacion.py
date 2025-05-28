@@ -49,10 +49,6 @@ def MutexLocks(procesos_df, recursos_df, acciones_df):
     recurso_estado = {row["nombreRecurso"]: True for _, row in recursos_df.iterrows()}
     timeline = []
 
-    acciones_df["ciclo"] = acciones_df["ciclo"].astype(int)
-    procesos_df["AT"] = procesos_df["AT"].astype(int)
-    procesos_df["BT"] = procesos_df["BT"].astype(int)
-
     # Combinar datos para filtrar según AT y BT
     acciones_df = acciones_df.merge(procesos_df[["PID", "AT", "BT"]], left_on="pid", right_on="PID", how="left")
 
@@ -138,6 +134,22 @@ def MutexLocks(procesos_df, recursos_df, acciones_df):
                 hovertext=f'{row["Accion"]} en {row["Recurso"]} ({row["Estado"]}) ciclo {row["Inicio"]}',
                 showlegend=False
             ))
+        fig.add_trace(go.Bar(
+            x=[0],
+            y=["Leyenda"],
+            orientation='h',
+            marker_color='green',
+            name='ACCESSED',
+            showlegend=True
+        ))
+        fig.add_trace(go.Bar(
+            x=[0],
+            y=["Leyenda"],
+            orientation='h',
+            marker_color='red',
+            name='WAITING',
+            showlegend=True
+        ))
 
         fig.update_layout(
             title=f"Ciclo {ciclo_actual}",
@@ -159,10 +171,10 @@ def semaforos(procesos_df, recursos_df, acciones_df):
 
     timeline = []
 
+    #ordenar por ciclo
     acciones_df = acciones_df.sort_values(by="ciclo")
-    acciones_df["ciclo"] = acciones_df["ciclo"].astype(int)
-    procesos_df["AT"] = procesos_df["AT"].astype(int)
-    procesos_df["BT"] = procesos_df["BT"].astype(int)
+
+    # Combinar datos para filtrar según AT y BT
     acciones_df = acciones_df.merge(procesos_df[["PID", "AT", "BT"]], left_on="pid", right_on="PID", how="left")
 
     # filtrado por AT y BT
@@ -248,6 +260,22 @@ def semaforos(procesos_df, recursos_df, acciones_df):
                 hovertext=f'{row["PID"]} - {row["Accion"]} en {row["Recurso"]} ({row["Estado"]})\nCiclo {row["Inicio"]}\nQuedan: {row["Restantes"]} acciones',
                 showlegend=False
             ))
+        fig.add_trace(go.Bar(
+            x=[0],
+            y=["Leyenda"],
+            orientation='h',
+            marker_color='green',
+            name='ACCESSED',
+            showlegend=True
+        ))
+        fig.add_trace(go.Bar(
+            x=[0],
+            y=["Leyenda"],
+            orientation='h',
+            marker_color='orange',
+            name='WAITING',
+            showlegend=True
+        ))
 
         fig.update_layout(
             title=f"Ciclo {ciclo_actual} (Semáforos)",

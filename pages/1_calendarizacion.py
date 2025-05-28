@@ -366,9 +366,8 @@ def rr(procesos_df, quantum):
     espera_total = 0
     for _, proceso in procesos_df.iterrows():
         ejecuciones = [b for b in timeline if b["Proceso"] == proceso["PID"]]
-        # Tiempo total ejecutado
-        tiempo_cpu = sum(b["Duracion"] for b in ejecuciones)
-        # Tiempo de espera = tiempo final - AT - tiempo en CPU
+
+        # Tiempo de espera
         fin = ejecuciones[-1]["Fin"]
         espera = fin - proceso["AT"] - proceso["BT"]
         espera_total += espera
