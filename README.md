@@ -5,14 +5,14 @@ Este proyecto es un simulador visual e interactivo de los principales algoritmos
 
 # Cómo ejecutar?
 en la terminal correr:
-```http
+```
   streamlit run main.py
 ```
 # Formatos de archivos:
 - todos los archivos tienen que ser de tipo .txt
 en el de calendarizacion, solo se sube el archivo de procesos.txt
 Mientras que en el de sincronizacion se deben de subir 3 archivos con los siguientes nombres:
-```http
+```
   acciones.txt
   procesos.txt
   recursos.txt
@@ -20,7 +20,7 @@ Mientras que en el de sincronizacion se deben de subir 3 archivos con los siguie
 Contenido de cada archivo:
 
 procesos.txt
-```http
+```
 <PID>, <BT>, <AT>, <Priority>
 
 ejemplo:
@@ -28,7 +28,7 @@ P1, 8, 0, 1
 ```
 
 recursos.txt
-```http
+```
 <NOMBRE RECURSO>, <CONTADOR> 
 
 ejemplo:
@@ -36,7 +36,7 @@ R1, 1
 ```
 
 acciones.txt
-```http
+```
 <PID>, <ACCION>, <RECURSO>, <CICLO>
 
 ejemplo:
