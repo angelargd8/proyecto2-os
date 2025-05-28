@@ -40,34 +40,38 @@ procesos_files= st.file_uploader(
 # como write se miden en ciclos y cada operacion dura a lo maximo 1 ciclo)
 # scroll horizontal dinamico cuando la cantidad de eventos exceda el espacio visual disponible
 # diferenciacion visual entre accesos existosos y esperas
+
+# Esta función simula el acceso a recursos críticos utilizando "mutex locks",
+# solo un proceso puede acceder al recurso en un ciclo dado
 # """
 
 def MutexLocks(procesos_df, recursos_df, acciones_df):
     st.subheader("Simulacion con Mutex Locks")
 
     # Estado de los recursos: True = libre
+    # diccionario para llevar el estado (libre/ocupado) de cada recurso
     recurso_estado = {row["nombreRecurso"]: True for _, row in recursos_df.iterrows()}
+    # lista de acciones con que se graficara
     timeline = []
 
-    # Combinar datos para filtrar según AT y BT
+    # combinar acciones con atributos de procesos para filtrar por tiempo de llegada AT y BT
     acciones_df = acciones_df.merge(procesos_df[["PID", "AT", "BT"]], left_on="pid", right_on="PID", how="left")
 
-    # filtrar las acciones que ocurren antes del AT del proceso
+    # filtrar las acciones que ocurren antes qhe e l proceso haya llegado
     acciones_df = acciones_df[acciones_df["ciclo"] >= acciones_df["AT"]]
 
-    # contar acciones que ha hecho cada proceso y limitar a BT
+    #limitar acciones por cada proceso segun su Burst Time
     acciones_df["accion_idx"] = acciones_df.groupby("pid").cumcount()
     acciones_df = acciones_df[acciones_df["accion_idx"] < acciones_df["BT"]]
-
-    # limpieza
     acciones_df = acciones_df.drop(columns=["accion_idx"])  
 
     acciones_realizadas = {pid: 0 for pid in procesos_df["PID"]}
     bt_map = dict(zip(procesos_df["PID"], procesos_df["BT"]))
     max_ciclo = acciones_df["ciclo"].max()
 
+    #buffer de acciones que se tienen que volver a reintentar
     cola_espera = []
-    # otro buffer
+   
     for ciclo in range(max_ciclo + 10): 
 
         acciones_en_ciclo = acciones_df[acciones_df["ciclo"] == ciclo].to_dict("records")
@@ -105,9 +109,11 @@ def MutexLocks(procesos_df, recursos_df, acciones_df):
                 "Restantes": restantes
             })
 
+        # liberar todos los recursos usados en este ciclo
         for r in recurso_estado:
             recurso_estado[r] = True
 
+        #salir si ya no hay acciones pendientes
         if ciclo > max_ciclo and len(cola_espera) == 0:
             break
 
@@ -115,6 +121,7 @@ def MutexLocks(procesos_df, recursos_df, acciones_df):
     st.write("Datos de simulacion:")
     st.dataframe(timeline_df)
 
+    #graficar
     colores = {"ACCESSED": "green", "WAITING": "red"}
     placeholder = st.empty()
 
@@ -162,6 +169,8 @@ def MutexLocks(procesos_df, recursos_df, acciones_df):
         time.sleep(1.5)
 
 
+# Simula el acceso a recursos con semaforos contadores. Los recursos tienen un "contador"
+# que representa cuantos procesos pueden acceder simultaneamente al mismo recurso
 def semaforos(procesos_df, recursos_df, acciones_df):
     st.subheader("Simulacion con Semaforos")
 
@@ -178,6 +187,7 @@ def semaforos(procesos_df, recursos_df, acciones_df):
     acciones_df = acciones_df.merge(procesos_df[["PID", "AT", "BT"]], left_on="pid", right_on="PID", how="left")
 
     # filtrado por AT y BT
+    #limitar acciones por cada proceso segun su Burst Time
     acciones_df = acciones_df[acciones_df["ciclo"] >= acciones_df["AT"]]
     acciones_df["accion_idx"] = acciones_df.groupby("pid").cumcount()
     acciones_df = acciones_df[acciones_df["accion_idx"] < acciones_df["BT"]]
@@ -185,11 +195,12 @@ def semaforos(procesos_df, recursos_df, acciones_df):
 
     acciones_realizadas = {pid: 0 for pid in procesos_df["PID"]}
     bt_map = dict(zip(procesos_df["PID"], procesos_df["BT"]))
-
-    cola_espera = []
-
     max_ciclo = acciones_df["ciclo"].max()
 
+    #buffer de acciones que se tienen que volver a reintentar
+    cola_espera = []
+
+    # por cada ciclo 
     for ciclo in range(max_ciclo + 10):
         acciones_en_ciclo = acciones_df[acciones_df["ciclo"] == ciclo].to_dict("records")
         acciones_en_ciclo += cola_espera
@@ -203,6 +214,7 @@ def semaforos(procesos_df, recursos_df, acciones_df):
             at = accion["AT"]
 
             if ciclo < at:
+                # Aun no ha llegado, reprograma
                 accion["ciclo"] = ciclo + 1
                 cola_espera.append(accion)
                 continue
@@ -230,17 +242,20 @@ def semaforos(procesos_df, recursos_df, acciones_df):
 
             acciones_realizadas[pid] += 1
 
-        # liberar todos los recursos usados en este ciclo
+        
         for r in uso_en_ciclo:
             recurso_contador[r] += uso_en_ciclo[r]
 
+        #salir si ya no hay acciones pendientes
         if ciclo > max_ciclo and len(cola_espera) == 0:
             break
 
+    # convertir el timeline en un dataframe
     timeline_df = pd.DataFrame(timeline)
     st.write("Datos de simulacion:")
     st.dataframe(timeline_df)
 
+    #graficar
     colores = {"ACCESSED": "green", "WAITING": "orange"}
     placeholder = st.empty()
 
