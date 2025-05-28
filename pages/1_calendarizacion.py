@@ -16,7 +16,7 @@ from collections import deque
 
 st.title("Simulador de algoritmos de calendarizacion ")
 
-st.subheader("***Seleccionar el algoritmo de calendarización:***")
+st.subheader("***Selecciona el algoritmo de calendarización:***")
 # seleccion de algoritmo
 algoritmo = st.selectbox("", 
                          ["First in first out", "Shortest job first", "Shortest remaining time", "Round Robin", "Priority"])
@@ -448,7 +448,7 @@ procesos_df = None
 
 if procesos_file:
     contenido = procesos_file.read().decode("utf-8")
-    # st.text_area("Contenido del archivo:", contenido, height=100)
+    st.text_area("Contenido del archivo:", contenido, height=100)
 
     #parsear los datos
     data =[]
