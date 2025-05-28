@@ -459,7 +459,8 @@ if procesos_file:
                 data.append({"PID": pid, "BT": int(bt), "AT": int(at), "Priority": int(priority)})
 
             except:
-                st.error(f"error: " + {line.strip()})
+                st.warning("Ingrese un archivo valido para cargar los procesos")
+                # st.error(f"error: " + {line.strip()})
 
     if data: 
         procesos_df = pd.DataFrame(data)
@@ -477,6 +478,7 @@ if "waitinTime" not in st.session_state:
     }
 
 if procesos_df is not None and st.button("Simular"):
+    st.empty() 
     st.subheader("Diagrama de gantt")
 
     if algoritmo == "First in first out":

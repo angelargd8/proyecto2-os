@@ -322,6 +322,7 @@ def semaforos(procesos_df, recursos_df, acciones_df):
 #----------
 #cargar archivos
 if procesos_files:
+    st.empty() 
     for archivo in procesos_files:
         # st.write(archivo)
         contenido = archivo.read().decode("utf-8")
@@ -340,7 +341,8 @@ if procesos_files:
                         data.append({"PID": pid, "BT": int(bt), "AT": int(at), "Priority": int(priority)})
 
                     except:
-                        st.error(f"error: " + {line.strip()})
+                        st.warning("Ingrese un archivo valido para procesos.txt")
+                        # st.error(f"error: " + {line.strip()})
 
             if data: 
                 procesos_df = pd.DataFrame(data)
@@ -355,7 +357,8 @@ if procesos_files:
                         data.append({"nombreRecurso": nombreRecurso, "contador": int(contador)})
 
                     except: 
-                        st.error(f"error " + {line.strip()})
+                        st.warning("Ingrese un archivo valido para recursos.txt")
+                        # st.error(f"error " + {line.strip()})
 
             if data: 
                 recursos_df = pd.DataFrame(data)
@@ -369,7 +372,8 @@ if procesos_files:
                         pid, accion, recurso, ciclo =[x.strip() for x in line.split(",")]
                         data.append({"pid": pid, "accion": accion, "recurso":recurso, "ciclo":int(ciclo)})
                     except:
-                        st.error(f"error" + {line.strip()})
+                        st.warning("Ingrese un archivo valido para acciones.txt")
+                        # st.error(f"error" + {line.strip()})
             if data: 
                 acciones_df = pd.DataFrame(data)
                 st.success("se cargaron correctamente las acciones")
