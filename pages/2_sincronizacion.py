@@ -334,15 +334,18 @@ if procesos_files:
             #parsear los datos
             data =[]
             for line in StringIO(contenido):
-                if line.strip():
-                    try:
-                        pid, bt, at, priority = [x.strip() for x in line.split(",")]
+                line = line.strip()
+                if not line: 
+                    continue
 
-                        data.append({"PID": pid, "BT": int(bt), "AT": int(at), "Priority": int(priority)})
+                try:
+                    pid, bt, at, priority = [x.strip() for x in line.split(",")]
 
-                    except:
-                        st.warning("Ingrese un archivo valido para procesos.txt")
-                        # st.error(f"error: " + {line.strip()})
+                    data.append({"PID": pid, "BT": int(bt), "AT": int(at), "Priority": int(priority)})
+
+                except:
+                    st.warning("Ingrese un archivo valido para procesos.txt")
+                    # st.error(f"error: " + {line.strip()})
 
             if data: 
                 procesos_df = pd.DataFrame(data)

@@ -94,11 +94,12 @@ def fifo(procesos_df):
     cola = Queue()
 
     #llenar la cola con los procesos
-    for _, proceso in procesos_ordenados.iterrows():
+    for x, proceso in procesos_ordenados.iterrows():
         cola.put(proceso)
 
     grafico_gantt = st.empty()
     tiempo = 0 
+    # lista de acciones con que se graficara
     timeline = []
 
     i = 0 
@@ -143,6 +144,7 @@ def fifo(procesos_df):
 # - Ejecutar el proceso con el menor tiempo de ejecución hasta que termine.
 # - Repetir el proceso con el siguiente más corto hasta que todos los procesos hayan terminado.
 # """
+#ejecuta primero el proceso ocn menor tiempo de ejecucion
 def sjf(procesos_df):
 
     procesos_restantes = procesos_df.copy()
@@ -166,6 +168,7 @@ def sjf(procesos_df):
 
         #elegir el de menor BT
         proceso = disponibles.sort_values("BT").iloc[0]
+        #definir el momento en el que empieza y termina la ejecucion
         start = max(tiempo, proceso["AT"])
         end = start + proceso["BT"]
 
@@ -205,6 +208,7 @@ def sjf(procesos_df):
 # - Ejecutar el proceso con el menor tiempo restante.
 # - Si llega un nuevo proceso con menor tiempo restante, se interrumpe el proceso actual y se ejecuta el nuevo.
 # - Repetir hasta que todos los procesos hayan terminado.
+# interrumpe si llega un proceso con mejor tiempo restante
 def srt(procesos_df):
     
     grafico_gantt = st.empty()
@@ -279,7 +283,7 @@ def srt(procesos_df):
     for _, proceso in procesos_df.iterrows():
         ejecuciones = [b for b in timeline if b["Proceso"] == proceso["PID"]]
         start = ejecuciones[0]["Inicio"]
-        end = sum(b["Duracion"] for b in ejecuciones)
+        # end = sum(b["Duracion"] for b in ejecuciones)
         espera = start - proceso["AT"]
         espera_total += espera
 
@@ -293,6 +297,7 @@ def srt(procesos_df):
 # - Ejecutar el primer proceso durante el tiempo del quantum.
 # - Si el proceso no ha terminado, se pone en cola y se pasa al siguiente.
 # - Repetir este ciclo hasta que todos los procesos hayan terminado.
+#cada proceso recibe un quantum de CPU, se alterna de forma circular
 def rr(procesos_df, quantum):
     
     grafico_gantt = st.empty()
@@ -305,11 +310,7 @@ def rr(procesos_df, quantum):
     #remaining time
     procesos["RT"] = procesos["BT"]
     procesos["EnCola"] = False
-    cola = deque()
-
-    ejecutando = None
-    start_time = None
-    
+    cola = deque()   
 
     while not procesos[procesos["RT"]> 0].empty or cola:
         #anadir procesos nuevos que hayan llegado
@@ -361,8 +362,6 @@ def rr(procesos_df, quantum):
     # st.subheader("Orden de ejecución paso a paso:")
     # st.code("\n".join(ejecucion_ciclos))
     
-
-
     espera_total = 0
     for _, proceso in procesos_df.iterrows():
         ejecuciones = [b for b in timeline if b["Proceso"] == proceso["PID"]]
@@ -381,6 +380,7 @@ def rr(procesos_df, quantum):
 # - Ordenar los procesos por prioridad (de mayor a menor).
 # - Ejecutar el proceso de mayor prioridad hasta que termine.
 # - Pasar al siguiente proceso con mayor prioridad y repetir hasta completar todos los procesos.
+#Ejecuta primero el proceso con mayor prioridad (menor número).
 def prio(procesos_df):
 
     grafico_gantt = st.empty()
@@ -452,15 +452,17 @@ if procesos_file:
     #parsear los datos
     data =[]
     for line in StringIO(contenido):
-        if line.strip():
-            try:
-                pid, bt, at, priority = [x.strip() for x in line.split(",")]
+        line = line.strip()
+        if not line: 
+            continue
+        try:
+            pid, bt, at, priority = [x.strip() for x in line.split(",")]
 
-                data.append({"PID": pid, "BT": int(bt), "AT": int(at), "Priority": int(priority)})
+            data.append({"PID": pid, "BT": int(bt), "AT": int(at), "Priority": int(priority)})
 
-            except:
-                st.warning("Ingrese un archivo valido para cargar los procesos")
-                # st.error(f"error: " + {line.strip()})
+        except:
+            st.warning("Ingrese un archivo valido para cargar los procesos")
+            # st.error(f"error: " + {line.strip()})
 
     if data: 
         procesos_df = pd.DataFrame(data)
